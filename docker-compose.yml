@@ -13,7 +13,7 @@ services:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: usersdb
     ports:
-      - "3306:3306"
+      - "3310:3306"
 
   mysql-products:
     image: mysql:8.0
