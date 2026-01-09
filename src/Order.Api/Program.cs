@@ -9,7 +9,7 @@ builder.Services.AddSwaggerGen();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<OrderDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0))));
 
 
 var app = builder.Build();
@@ -20,16 +20,29 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-using (var scope = app.Services.CreateScope())
+for (int i = 0; i < 10; i++)
 {
-    var db = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
-    db.Database.EnsureCreated();
-
-    var seedFile = Path.Combine(app.Environment.ContentRootPath, "seed.sql");
-    if (File.Exists(seedFile))
+    try
     {
-        var sql = File.ReadAllText(seedFile);
-        db.Database.ExecuteSqlRaw(sql);
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+            db.Database.EnsureCreated();
+
+            var seedFile = Path.Combine(app.Environment.ContentRootPath, "seed.sql");
+            if (File.Exists(seedFile))
+            {
+                var sql = File.ReadAllText(seedFile);
+                db.Database.ExecuteSqlRaw(sql);
+            }
+        }
+        break;
+    }
+    catch (Exception)
+    {
+        if (i == 9) throw;
+        Console.WriteLine($"Waiting for MySQL... attempt {i + 1}");
+        Thread.Sleep(5000);
     }
 }
 

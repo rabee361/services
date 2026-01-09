@@ -9,7 +9,7 @@ builder.Services.AddSwaggerGen();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ProductDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0))));
 
 var app = builder.Build();
 
@@ -19,39 +19,52 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-using (var scope = app.Services.CreateScope())
+for (int i = 0; i < 10; i++)
 {
-    var db = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
-    db.Database.EnsureCreated();
-
-    var seedFile = Path.Combine(app.Environment.ContentRootPath, "seed.sql");
-    if (File.Exists(seedFile))
+    try
     {
-        var sql = File.ReadAllText(seedFile);
-        db.Database.ExecuteSqlRaw(sql);
-    }
-
-    // Assign random images if not present
-    var wwwroot = Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "images");
-    if (Directory.Exists(wwwroot))
-    {
-        var images = Directory.GetFiles(wwwroot, "*.png")
-            .Select(f => "/images/" + Path.GetFileName(f))
-            .ToList();
-
-        if (images.Any())
+        using (var scope = app.Services.CreateScope())
         {
-            var products = db.Products.Where(p => string.IsNullOrEmpty(p.ImageUrl)).ToList();
-            if (products.Any())
+            var db = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
+            db.Database.EnsureCreated();
+
+            var seedFile = Path.Combine(app.Environment.ContentRootPath, "seed.sql");
+            if (File.Exists(seedFile))
             {
-                var random = new Random();
-                foreach (var product in products)
+                var sql = File.ReadAllText(seedFile);
+                db.Database.ExecuteSqlRaw(sql);
+            }
+
+            // Assign random images if not present
+            var wwwroot = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "images");
+            if (Directory.Exists(wwwroot))
+            {
+                var images = Directory.GetFiles(wwwroot, "*.png")
+                    .Select(f => "/images/" + Path.GetFileName(f))
+                    .ToList();
+
+                if (images.Any())
                 {
-                    product.ImageUrl = images[random.Next(images.Count)];
+                    var products = db.Products.Where(p => string.IsNullOrEmpty(p.ImageUrl)).ToList();
+                    if (products.Any())
+                    {
+                        var random = new Random();
+                        foreach (var product in products)
+                        {
+                            product.ImageUrl = images[random.Next(images.Count)];
+                        }
+                        db.SaveChanges();
+                    }
                 }
-                db.SaveChanges();
             }
         }
+        break;
+    }
+    catch (Exception)
+    {
+        if (i == 9) throw;
+        Console.WriteLine($"Waiting for MySQL... attempt {i + 1}");
+        Thread.Sleep(5000);
     }
 }
 
