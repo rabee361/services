@@ -24,6 +24,13 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
     db.Database.EnsureCreated();
+
+    var seedFile = Path.Combine(app.Environment.ContentRootPath, "seed.sql");
+    if (File.Exists(seedFile))
+    {
+        var sql = File.ReadAllText(seedFile);
+        db.Database.ExecuteSqlRaw(sql);
+    }
 }
 
 app.UseAuthorization();

@@ -13,5 +13,6 @@ RUN dotnet publish "Inventory.Api.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY src/Inventory.Api/seed.sql .
 ENTRYPOINT ["dotnet", "Inventory.Api.dll"]
 

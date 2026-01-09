@@ -1,0 +1,7 @@
+INSERT INTO Orders (Id, ProductId, Quantity, UserId, Status)
+SELECT '550e8400-e29b-41d4-a716-446655440000', 1, 2, '3', 'Completed'
+WHERE NOT EXISTS (SELECT 1 FROM Orders WHERE Id = '550e8400-e29b-41d4-a716-446655440000');
+
+INSERT INTO Orders (Id, ProductId, Quantity, UserId, Status)
+SELECT '6712705b-801c-4235-8664-58a3683f124c', 2, 1, '3', 'Pending'
+WHERE NOT EXISTS (SELECT 1 FROM Orders WHERE Id = '6712705b-801c-4235-8664-58a3683f124c');

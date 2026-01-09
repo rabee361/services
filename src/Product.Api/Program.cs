@@ -24,6 +24,13 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
     db.Database.EnsureCreated();
 
+    var seedFile = Path.Combine(app.Environment.ContentRootPath, "seed.sql");
+    if (File.Exists(seedFile))
+    {
+        var sql = File.ReadAllText(seedFile);
+        db.Database.ExecuteSqlRaw(sql);
+    }
+
     // Assign random images if not present
     var wwwroot = Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "images");
     if (Directory.Exists(wwwroot))

@@ -13,5 +13,6 @@ RUN dotnet publish "Users.Api.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY src/Users.Api/seed.sql .
 ENTRYPOINT ["dotnet", "Users.Api.dll"]
 

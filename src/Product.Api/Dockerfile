@@ -13,6 +13,7 @@ RUN dotnet publish "Product.Api.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY src/Product.Api/seed.sql .
 COPY src/Product.Api/wwwroot ./wwwroot
 ENTRYPOINT ["dotnet", "Product.Api.dll"]
 
