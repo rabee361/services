@@ -18,6 +18,7 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 });
 
 app.UsePathBase("/admin");
+app.UseStaticFiles();
 app.UseSession();
 
 

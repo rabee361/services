@@ -14,6 +14,7 @@ builder.Services.AddHttpClient<Ecommerce.Web.Services.IProductService, Ecommerce
 var app = builder.Build();
 
 app.UseSession();
+app.UseStaticFiles();
 
 
 // Configure the HTTP request pipeline.
