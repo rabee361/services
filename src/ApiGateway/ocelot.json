@@ -9,7 +9,7 @@
                     "Port": 8080
                 }
             ],
-            "UpstreamPathTemplate": "/users/{everything}",
+            "UpstreamPathTemplate": "/api/users/{everything}",
             "UpstreamHttpMethod": [
                 "Get",
                 "Post",
@@ -26,7 +26,7 @@
                     "Port": 8080
                 }
             ],
-            "UpstreamPathTemplate": "/products/{everything}",
+            "UpstreamPathTemplate": "/api/products/{everything}",
             "UpstreamHttpMethod": [
                 "Get",
                 "Post",
@@ -43,7 +43,7 @@
                     "Port": 8080
                 }
             ],
-            "UpstreamPathTemplate": "/inventory/{everything}",
+            "UpstreamPathTemplate": "/api/inventory/{everything}",
             "UpstreamHttpMethod": [
                 "Get",
                 "Post",
@@ -60,7 +60,7 @@
                     "Port": 8080
                 }
             ],
-            "UpstreamPathTemplate": "/orders/{everything}",
+            "UpstreamPathTemplate": "/api/orders/{everything}",
             "UpstreamHttpMethod": [
                 "Get",
                 "Post",
