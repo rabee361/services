@@ -7,47 +7,24 @@ services:
       - "5672:5672"
       - "15672:15672"
 
-  mysql-users:
+  mysql-db:
     image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: usersdb
     ports:
       - "3310:3306"
-
-  mysql-products:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: productdb
-    ports:
-      - "3307:3306"
-
-  mysql-inventory:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: inventorydb
-    ports:
-      - "3308:3306"
-
-  mysql-orders:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: orderdb
-    ports:
-      - "3309:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   users-api:
     build:
       context: .
       dockerfile: ./src/Users.Api/Dockerfile
     environment:
-      - ConnectionStrings__DefaultConnection=Server=mysql-users;Database=usersdb;User=root;Password=password;
+      - ConnectionStrings__DefaultConnection=Server=mysql-db;Database=usersdb;User=root;Password=password;
       - RabbitMQ__Host=rabbitmq
     depends_on:
-      - mysql-users
+      - mysql-db
       - rabbitmq
 
   product-api:
@@ -55,10 +32,10 @@ services:
       context: .
       dockerfile: ./src/Product.Api/Dockerfile
     environment:
-      - ConnectionStrings__DefaultConnection=Server=mysql-products;Database=productdb;User=root;Password=password;
+      - ConnectionStrings__DefaultConnection=Server=mysql-db;Database=productdb;User=root;Password=password;
       - RabbitMQ__Host=rabbitmq
     depends_on:
-      - mysql-products
+      - mysql-db
       - rabbitmq
 
   inventory-api:
@@ -66,10 +43,10 @@ services:
       context: .
       dockerfile: ./src/Inventory.Api/Dockerfile
     environment:
-      - ConnectionStrings__DefaultConnection=Server=mysql-inventory;Database=inventorydb;User=root;Password=password;
+      - ConnectionStrings__DefaultConnection=Server=mysql-db;Database=inventorydb;User=root;Password=password;
       - RabbitMQ__Host=rabbitmq
     depends_on:
-      - mysql-inventory
+      - mysql-db
       - rabbitmq
 
   order-api:
@@ -77,10 +54,10 @@ services:
       context: .
       dockerfile: ./src/Order.Api/Dockerfile
     environment:
-      - ConnectionStrings__DefaultConnection=Server=mysql-orders;Database=orderdb;User=root;Password=password;
+      - ConnectionStrings__DefaultConnection=Server=mysql-db;Database=orderdb;User=root;Password=password;
       - RabbitMQ__Host=rabbitmq
     depends_on:
-      - mysql-orders
+      - mysql-db
       - rabbitmq
 
   api-gateway:

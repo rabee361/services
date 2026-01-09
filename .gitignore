@@ -1,0 +1,36 @@
+# .NET Core
+bin/
+obj/
+out/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio / VS Code
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+.history/
+
+# Docker
+.dockerignore
+
+# Build Outputs
+publish_executables/
+publish/
+
+# Databases
+*.db
+*.sqlite
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS generated files
+.DS_Store
+Thumbs.db

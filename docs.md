@@ -1,130 +1,94 @@
 # 🏗️ E-Commerce Microservices Architecture Documentation
 
-Welcome to the documentation for the **GLOW SHOP** ecosystem! This system is a distributed microservices architecture built with **.NET 8**, **MySQL**, **RabbitMQ**, and **Ocelot**, featuring a premium customer storefront and a robust admin dashboard.
+Welcome to the internal technical documentation for the **GLOW SHOP** ecosystem.
 
 ---
 
-## 🛰️ System Overview
+## 📁 Source Code Structure (`/src`)
 
-The architecture consists of 6 main components:
+The root `/src` directory contains all business logic, divided into specialized microservices and web interfaces.
 
-### 🌐 Web Applications
+### 🛰️ 1. ApiGateway
 
-1.  **Ecommerce.Web (Port 5174)**: The customer-facing storefront. Allows users to browse products, sign up, log in, and shop.
-2.  **Ecommerce.Admin (Port 5257)**: The management portal. Features role-based access for Admins and Managers to control inventory, users, and products.
+The entry point for all external traffic. It handles request routing, load balancing, and authentication abstraction.
 
-### ⚙️ Microservices (Backend)
+- **`ocelot.json`**: The core configuration file. Defines "Upstream" paths (what the user sees) and "Downstream" paths (internal service locations).
+- **`Program.cs`**: Initializes the Ocelot middleware and integrates it into the ASP.NET pipeline.
+- **`appsettings.json`**: Contains basic hosting settings.
+- **`Dockerfile`**: Containerization instructions for the gateway.
 
-1.  **Users.Api (Port 5260)**: Manages authentication, user profiles, and roles (Client, Manager, Admin).
-2.  **Product.Api (Port 5025)**: Handles the product catalog and categories.
-3.  **Inventory.Api (Port 5098)**: Manages multiple warehouses and stock levels.
-4.  **Order.Api (Port 5053)**: Orchestrates order placement and history.
-5.  **ApiGateway (Port 5000)**: Ocelot gateway that routes all external requests to the correct internal service.
+### 🛍️ 2. Ecommerce.Web (Customer Storefront)
 
----
+An ASP.NET Core MVC application providing the main shopping experience.
 
-## 👤 Authentication & Roles
+- **`Controllers/HomeController.cs`**: Manages the product gallery, cart logic, and checkout flows.
+- **`Controllers/AccountController.cs`**: Handles user registration, login, and session management.
+- **`Services/ProductService.cs`**: An internal client that communicates with the `Product.Api` via the Gateway.
+- **`Models/`**: Contains ViewModels for mapping API data to the UI (e.g., `ProductViewModel`, `CartViewModel`).
+- **`Views/`**: UI templates using Razor. Includes `Home/Index` (Gallery), `Home/Cart`, and `Shared/_Layout`.
+- **`wwwroot/`**: Static assets including custom CSS for the glassmorphism design.
 
-The system uses a session-based authentication layer that integrates with the **Users.Api**.
+### 👨‍� 3. Ecommerce.Admin (Management Portal)
 
-| Role        | Access Level | Description                                                                                     |
-| :---------- | :----------- | :---------------------------------------------------------------------------------------------- |
-| **Client**  | Storefront   | Can shop, view history, and manage their profile in `Ecommerce.Web`.                            |
-| **Manager** | Admin Portal | Access to `Ecommerce.Admin`. Restricted to managing stocks for their assigned warehouse only.   |
-| **Admin**   | Full Master  | Access to `Ecommerce.Admin`. Full control over Users, Products, Categories, and all Warehouses. |
+A restricted portal for Admins and Warehouse Managers.
 
----
+- **`Program.cs`**: Configured with `UsePathBase("/admin")` to run behind a subpath in production.
+- **`Controllers/BaseAdminController.cs`**: A base class that ensures only users with `Admin` or `Manager` roles can access the controllers.
+- **`Controllers/UsersController.cs`**: CRUD operations for managing system users and their roles.
+- **`Controllers/ProductsController.cs`**: Allows Admins to add/edit products and categories.
+- **`Controllers/InventoryController.cs`**: Allows Managers to view and update stock levels for their assigned warehouses.
+- **`Views/`**: Specialized layouts for the dashboard sidebar and management tables.
 
-## 📡 API Endpoints
+### � 4. Users.Api
 
-### 1. Users Service (`/users/api/...`)
+Handles user identity, roles, and authentication.
 
-- `POST /login`: Authenticates a user and returns their profile + role.
-- `POST /register`: Creates a new Client account.
-- `GET /`: Returns all users (Admin only).
-- `PUT /{id}`: Updates user details/roles.
+- **`Controllers/UsersController.cs`**: Provides endpoints for `/login`, `/register`, and user management.
+- **`Data/UsersDbContext.cs`**: Entity Framework context for the `usersdb`.
+- **`Program.cs`**: Sets up the MySQL connection and dependency injection.
 
-### 2. Product Service (`/products/api/...`)
+### 📦 5. Product.Api
 
-- `GET /products`: List all products.
-- `POST /products`: Add new product (Admin only).
-- `GET /categories`: List all available product categories.
+The "Source of Truth" for the product catalog.
 
-### 3. Inventory Service (`/inventory/api/...`)
+- **`Controllers/ProductsController.cs`**: Manages the product list and details.
+- **`Controllers/CategoriesController.cs`**: Handles product categories.
+- **`Data/ProductDbContext.cs`**: Entity Framework context for the `productdb`.
 
-- `GET /inventory`: List all stock levels across warehouses.
-- `GET /inventory/warehouse/{id}`: Filter stock by warehouse (Manager use-case).
-- `GET /warehouses`: List all warehouses.
-- `GET /warehouses/manager/{id}`: Find which warehouse a manager is assigned to.
+### 🏭 6. Inventory.Api
 
-### 4. Order Service (`/orders/api/...`)
+Manages warehouses and multi-location stock levels.
 
-- `POST /orders`: Places an order (Triggers async stock reduction via RabbitMQ).
-- `GET /orders`: View order history.
+- **`Controllers/WarehousesController.cs`**: Manages warehouse entities and manager assignments.
+- **`Controllers/InventoryController.cs`**: Manages stock counts.
+- **`Consumers/OrderCreatedConsumer.cs`**: **CRITICAL**: Listens to RabbitMQ messages. When an order is placed, this file automatically reduces stock in the database.
 
----
+### 🧾 7. Order.Api
 
-## 🔄 Integration Logic
+Orchestrates the order lifecycle.
 
-### Synchronous (REST)
+- **`Controllers/OrdersController.cs`**: Handles order placement.
+- **`Program.cs`**: Configures **MassTransit** to publish events to RabbitMQ when a new order is saved.
 
-Web applications communicate with services via the **ApiGateway** or directly in development.
+### 🤝 8. Shared.Contracts
 
-- **Example**: `Ecommerce.Admin` calls `Users.Api` to verify a login request.
+A library shared across all microservices to ensure consistency in communication.
 
-### Asynchronous (Event-Driven)
-
-We use **RabbitMQ** with **MassTransit** for cross-service consistency:
-
-1.  **Order Placed**: `Order.Api` publishes `OrderCreatedEvent`.
-2.  **Stock Reduced**: `Inventory.Api` consumes the event and updates the stock for the relevant warehouse automatically.
+- **`Events.cs`**: Defines the `OrderCreatedEvent` message structure used by RabbitMQ.
 
 ---
 
-## 🚀 How to Run the System (Master Command)
+## 🔄 System Workflow (Example: Placing an Order)
 
-You can now start the **entire ecosystem** (all 4 APIs, the Gateway, and both Web Portals) with a single command!
-
-### Prerequisites
-
-- Docker & Docker Compose installed.
-
-### The "One Command" Start
-
-From the project root, simply run:
-
-```bash
-docker-compose up --build
-```
-
-This will:
-
-1.  Spin up all **MySQL** databases and **RabbitMQ**.
-2.  Build and start all 4 **Microservices**.
-3.  Build and start the **Ocelot Gateway**.
-4.  Build and start the **Customer Storefront** (`Ecommerce.Web`) and **Admin Portal** (`Ecommerce.Admin`).
-
-### 🔗 Access Points
-
-Once everything is up, you can access the system at:
-
-- **Customer Storefront**: [http://localhost:5174](http://localhost:5174) 🛒
-- **Admin Portal**: [http://localhost:5257](http://localhost:5257) 🛠️
-- **API Gateway**: [http://localhost:5000](http://localhost:5000) 🛰️
-- **RabbitMQ Management**: [http://localhost:15672](http://localhost:15672) (guest/guest) 🐰
-
-### 🔑 Test Accounts
-
-- **Master Admin**: User: `admin` | Pass: `admin`
-- **Warehouse Manager**: User: `manager` | Pass: `manager`
+1.  **User** clicks "Checkout" in `Ecommerce.Web`.
+2.  `Ecommerce.Web` sends a request to `Order.Api`.
+3.  `Order.Api` saves the order to its database and publishes an **`OrderCreatedEvent`** to **RabbitMQ**.
+4.  **`Inventory.Api`** (the Consumer) picks up the message instantly.
+5.  `Inventory.Api` finds the correct warehouse and reduces the stock count.
+6.  The UI is updated, and the user sees their order history reflect the change.
 
 ---
 
-## 🛠️ Technology Stack
+## �️ Database Strategy
 
-- **Backend**: .NET 8, ASP.NET Core Web API
-- **Frontend**: ASP.NET Core MVC (Inter font, Glassmorphism CSS)
-- **Database**: MySQL (Per-service database pattern)
-- **Messaging**: RabbitMQ + MassTransit
-- **Gateway**: Ocelot
-- **Hosting**: Docker & Docker Compose
+We use a **Database-per-Service** pattern consolidated into a single MySQL container (`mysql-db`) for resource efficiency. Each service only has access to its own database schema.
