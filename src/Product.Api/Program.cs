@@ -23,7 +23,32 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
     db.Database.EnsureCreated();
+
+    // Assign random images if not present
+    var wwwroot = Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "images");
+    if (Directory.Exists(wwwroot))
+    {
+        var images = Directory.GetFiles(wwwroot, "*.png")
+            .Select(f => "/images/" + Path.GetFileName(f))
+            .ToList();
+
+        if (images.Any())
+        {
+            var products = db.Products.Where(p => string.IsNullOrEmpty(p.ImageUrl)).ToList();
+            if (products.Any())
+            {
+                var random = new Random();
+                foreach (var product in products)
+                {
+                    product.ImageUrl = images[random.Next(images.Count)];
+                }
+                db.SaveChanges();
+            }
+        }
+    }
 }
+
+app.UseStaticFiles();
 
 app.UseAuthorization();
 app.MapControllers();
