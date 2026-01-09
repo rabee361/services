@@ -24,26 +24,26 @@ public class InventoryController : BaseAdminController
         
         if (IsAdmin)
         {
-            var response = await _httpClient.GetAsync($"{_inventoryApi}/api/inventory");
+            var response = await _httpClient.GetAsync($"{_inventoryApi}/inventory");
             stocks = await response.Content.ReadFromJsonAsync<List<StockViewModel>>() ?? new();
         }
         else if (IsManager)
         {
             // Get warehouse for this manager
-            var wResponse = await _httpClient.GetAsync($"{_inventoryApi}/api/warehouses/manager/{CurrentUser.Id}");
+            var wResponse = await _httpClient.GetAsync($"{_inventoryApi}/warehouses/manager/{CurrentUser.Id}");
             if (wResponse.IsSuccessStatusCode)
             {
                 var warehouse = await wResponse.Content.ReadFromJsonAsync<WarehouseViewModel>();
                 if (warehouse != null)
                 {
-                    var sResponse = await _httpClient.GetAsync($"{_inventoryApi}/api/inventory/warehouse/{warehouse.Id}");
+                    var sResponse = await _httpClient.GetAsync($"{_inventoryApi}/inventory/warehouse/{warehouse.Id}");
                     stocks = await sResponse.Content.ReadFromJsonAsync<List<StockViewModel>>() ?? new();
                 }
             }
         }
 
         // Fetch product names for display
-        var productsResponse = await _httpClient.GetAsync($"{_productApi}/api/products");
+        var productsResponse = await _httpClient.GetAsync($"{_productApi}/products");
         var products = await productsResponse.Content.ReadFromJsonAsync<List<ProductViewModel>>() ?? new();
         
         foreach (var stock in stocks)
@@ -57,14 +57,14 @@ public class InventoryController : BaseAdminController
     [HttpPost]
     public async Task<IActionResult> UpdateStock(int id, int quantity)
     {
-        var response = await _httpClient.GetAsync($"{_inventoryApi}/api/inventory/{id}");
+        var response = await _httpClient.GetAsync($"{_inventoryApi}/inventory/{id}");
         if (response.IsSuccessStatusCode)
         {
             var stock = await response.Content.ReadFromJsonAsync<StockViewModel>();
             if (stock != null)
             {
                 stock.Quantity = quantity;
-                await _httpClient.PutAsJsonAsync($"{_inventoryApi}/api/inventory/{id}", stock);
+                await _httpClient.PutAsJsonAsync($"{_inventoryApi}/inventory/{id}", stock);
             }
         }
         return RedirectToAction(nameof(Index));

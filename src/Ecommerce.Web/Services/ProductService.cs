@@ -24,20 +24,19 @@ public class ProductService : IProductService
     {
         try
         {
-            var response = await _httpClient.GetAsync($"{_baseUrl}/api/products");
+            // Path through Gateway: {GatewayUrl}/products/products maps to Backend: {BackendUrl}/api/products
+            var response = await _httpClient.GetAsync($"{_baseUrl}/products");
             if (response.IsSuccessStatusCode)
             {
-                var products = await response.Content.ReadFromJsonAsync<List<ProductViewModel>>();
-                return products ?? new List<ProductViewModel>();
+                var productDtos = await response.Content.ReadFromJsonAsync<List<ProductDto>>();
+                return productDtos?.Select(MapToViewModel).ToList() ?? new List<ProductViewModel>();
             }
         }
         catch (Exception ex)
         {
-            // Fallback or log error
             Console.WriteLine($"Error fetching products: {ex.Message}");
         }
 
-        // Return empty or pseudo data for now as per user's "pseudo data first" rule
         return new List<ProductViewModel>();
     }
 
@@ -45,7 +44,8 @@ public class ProductService : IProductService
     {
         try
         {
-            var response = await _httpClient.GetAsync($"{_baseUrl}/api/categories");
+            // Path through Gateway: {GatewayUrl}/products/categories maps to Backend: {BackendUrl}/api/categories
+            var response = await _httpClient.GetAsync($"{_baseUrl}/categories");
             if (response.IsSuccessStatusCode)
             {
                 var categories = await response.Content.ReadFromJsonAsync<List<CategoryViewModel>>();
@@ -57,26 +57,19 @@ public class ProductService : IProductService
             Console.WriteLine($"Error fetching categories: {ex.Message}");
         }
 
-        // Return pseudo data as fallback
-        return new List<CategoryViewModel>
-        {
-            new CategoryViewModel { Id = 1, Name = "Electronics", Description = "Electronic devices and gadgets", ProductCount = 5 },
-            new CategoryViewModel { Id = 2, Name = "Home", Description = "Home and living products", ProductCount = 3 },
-            new CategoryViewModel { Id = 3, Name = "Accessories", Description = "Fashion and lifestyle accessories", ProductCount = 4 },
-            new CategoryViewModel { Id = 4, Name = "Furniture", Description = "Furniture and decor", ProductCount = 2 },
-            new CategoryViewModel { Id = 5, Name = "Apparel", Description = "Clothing and fashion", ProductCount = 6 }
-        };
+        return new List<CategoryViewModel>();
     }
 
     public async Task<List<ProductViewModel>> GetProductsByCategoryAsync(int categoryId)
     {
         try
         {
-            var response = await _httpClient.GetAsync($"{_baseUrl}/api/categories/{categoryId}/products");
+            // Path through Gateway: {GatewayUrl}/products/categories/{id}/products
+            var response = await _httpClient.GetAsync($"{_baseUrl}/categories/{categoryId}/products");
             if (response.IsSuccessStatusCode)
             {
-                var products = await response.Content.ReadFromJsonAsync<List<ProductViewModel>>();
-                return products ?? new List<ProductViewModel>();
+                var productDtos = await response.Content.ReadFromJsonAsync<List<ProductDto>>();
+                return productDtos?.Select(MapToViewModel).ToList() ?? new List<ProductViewModel>();
             }
         }
         catch (Exception ex)
@@ -86,4 +79,37 @@ public class ProductService : IProductService
 
         return new List<ProductViewModel>();
     }
+
+    private ProductViewModel MapToViewModel(ProductDto dto)
+    {
+        return new ProductViewModel
+        {
+            Id = dto.Id,
+            Name = dto.Name,
+            Price = dto.Price,
+            Description = dto.Category?.Description ?? "Excellent product",
+            // Construct browser-safe relative URL through the Nginx/Gateway path
+            ImageUrl = string.IsNullOrEmpty(dto.ImageUrl) ? "/api/placeholder/400/400" : $"/api/products{dto.ImageUrl}",
+            Category = dto.Category?.Name ?? "General",
+            DateAdded = DateTime.Now,
+            IsFeatured = dto.Price > 500 // Sample logic
+        };
+    }
+}
+
+// Internal DTOs for cleaner mapping from the API response
+public class ProductDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public string ImageUrl { get; set; } = string.Empty;
+    public CategoryDto? Category { get; set; }
+}
+
+public class CategoryDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
 }

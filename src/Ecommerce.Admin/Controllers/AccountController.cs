@@ -25,7 +25,7 @@ public class AccountController : Controller
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         var usersApiUrl = _configuration["Services:UsersApi"] ?? "http://localhost:5031";
-        var response = await _httpClient.PostAsJsonAsync($"{usersApiUrl}/api/users/login", model);
+        var response = await _httpClient.PostAsJsonAsync($"{usersApiUrl}/login", model);
 
         if (response.IsSuccessStatusCode)
         {

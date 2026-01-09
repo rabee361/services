@@ -11,7 +11,7 @@ public class ProductsController : BaseAdminController
     public ProductsController(IConfiguration configuration, HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _apiUrl = (configuration["Services:ProductApi"] ?? "http://localhost:5025") + "/api/products";
+        _apiUrl = (configuration["Services:ProductApi"] ?? "http://localhost:5025") + "/products";
     }
 
     public async Task<IActionResult> Index()

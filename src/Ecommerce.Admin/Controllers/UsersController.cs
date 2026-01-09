@@ -11,7 +11,7 @@ public class UsersController : BaseAdminController
     public UsersController(IConfiguration configuration, HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _apiUrl = (configuration["Services:UsersApi"] ?? "http://localhost:5031") + "/api/users";
+        _apiUrl = (configuration["Services:UsersApi"] ?? "http://localhost:5031");
     }
 
     public async Task<IActionResult> Index()
