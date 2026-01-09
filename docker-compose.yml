@@ -1,0 +1,124 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  mysql-users:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: usersdb
+    ports:
+      - "3306:3306"
+
+  mysql-products:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: productdb
+    ports:
+      - "3307:3306"
+
+  mysql-inventory:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: inventorydb
+    ports:
+      - "3308:3306"
+
+  mysql-orders:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: orderdb
+    ports:
+      - "3309:3306"
+
+  users-api:
+    build:
+      context: .
+      dockerfile: ./src/Users.Api/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mysql-users;Database=usersdb;User=root;Password=password;
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      - mysql-users
+      - rabbitmq
+
+  product-api:
+    build:
+      context: .
+      dockerfile: ./src/Product.Api/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mysql-products;Database=productdb;User=root;Password=password;
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      - mysql-products
+      - rabbitmq
+
+  inventory-api:
+    build:
+      context: .
+      dockerfile: ./src/Inventory.Api/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mysql-inventory;Database=inventorydb;User=root;Password=password;
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      - mysql-inventory
+      - rabbitmq
+
+  order-api:
+    build:
+      context: .
+      dockerfile: ./src/Order.Api/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mysql-orders;Database=orderdb;User=root;Password=password;
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      - mysql-orders
+      - rabbitmq
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./src/ApiGateway/Dockerfile
+    ports:
+      - "5000:8080"
+    depends_on:
+      - users-api
+      - product-api
+      - inventory-api
+      - order-api
+
+  ecommerce-web:
+    build:
+      context: .
+      dockerfile: ./src/Ecommerce.Web/Dockerfile
+    ports:
+      - "5174:8080"
+    environment:
+      - Services__UsersApi=http://users-api:8080
+      - Services__ProductApi=http://product-api:8080
+    depends_on:
+      - users-api
+      - product-api
+
+  ecommerce-admin:
+    build:
+      context: .
+      dockerfile: ./src/Ecommerce.Admin/Dockerfile
+    ports:
+      - "5257:8080"
+    environment:
+      - Services__UsersApi=http://users-api:8080
+      - Services__ProductApi=http://product-api:8080
+      - Services__InventoryApi=http://inventory-api:8080
+    depends_on:
+      - users-api
+      - product-api
+      - inventory-api

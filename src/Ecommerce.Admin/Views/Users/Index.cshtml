@@ -1,0 +1,56 @@
+@model IEnumerable<Ecommerce.Admin.Models.UserViewModel>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "User Management";
+}
+
+<div class="top-bar">
+    <h1 class="page-title">User Management</h1>
+    <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add User</button>
+</div>
+
+<div class="admin-card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>
+                        <div style="font-weight: 700;">@user.Username</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">ID: #@user.Id</div>
+                    </td>
+                    <td>@user.Email</td>
+                    <td>
+                        <span class="badge badge-@user.Role.ToString().ToLower()">@user.Role</span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <form asp-action="UpdateRole" method="post" style="display: flex; gap: 0.3rem;">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <select name="role" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: auto;">
+                                    @foreach (var role in Enum.GetValues(typeof(Ecommerce.Admin.Models.UserRole)))
+                                    {
+                                        <option value="@role" selected="@(user.Role.ToString() == role.ToString())">@role</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-outline" style="padding: 0.3rem 0.6rem;">Update</button>
+                            </form>
+                            <form asp-action="Delete" method="post" onsubmit="return confirm('Are you sure?')">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

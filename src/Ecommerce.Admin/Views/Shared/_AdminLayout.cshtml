@@ -1,0 +1,93 @@
+@using System.Text.Json
+@using Ecommerce.Admin.Models
+@{
+    var userJson = Context.Session.GetString("User");
+    UserViewModel currentUser = null;
+    if (!string.IsNullOrEmpty(userJson))
+    {
+        currentUser = JsonSerializer.Deserialize<UserViewModel>(userJson);
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - GLOW ADMIN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="admin-container">
+        @if (currentUser != null)
+        {
+            <aside class="sidebar">
+                <a href="/" class="sidebar-logo">GLOW ADMIN</a>
+                
+                <ul class="nav-menu">
+                    @if (currentUser.Role == UserRole.Admin)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Dashboard" ? "active" : "")" asp-controller="Dashboard" asp-action="Index">
+                                <i class="fa-solid fa-chart-line"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Users" ? "active" : "")" asp-controller="Users" asp-action="Index">
+                                <i class="fa-solid fa-users"></i> Users
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Products" ? "active" : "")" asp-controller="Products" asp-action="Index">
+                                <i class="fa-solid fa-box"></i> Products
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Categories" ? "active" : "")" asp-controller="Categories" asp-action="Index">
+                                <i class="fa-solid fa-tags"></i> Categories
+                            </a>
+                        </li>
+                    }
+                    
+                    @if (currentUser.Role == UserRole.Admin || currentUser.Role == UserRole.Manager)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Inventory" ? "active" : "")" asp-controller="Inventory" asp-action="Index">
+                                <i class="fa-solid fa-warehouse"></i> Inventory
+                            </a>
+                        </li>
+                        @if (currentUser.Role == UserRole.Admin)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewData["ActivePage"]?.ToString() == "Warehouses" ? "active" : "")" asp-controller="Warehouses" asp-action="Index">
+                                    <i class="fa-solid fa-building"></i> Warehouses
+                                </a>
+                            </li>
+                        }
+                    }
+                </ul>
+
+                <div class="sidebar-footer">
+                    <div style="padding: 1rem; border-top: 1px solid var(--border); margin-bottom: 0.5rem;">
+                        <div style="font-weight: 700; font-size: 0.9rem;">@currentUser.Username</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: capitalize;">@currentUser.Role.ToString().ToLower()</div>
+                    </div>
+                    <a asp-controller="Account" asp-action="Logout" class="nav-link" style="color: #ef4444;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </a>
+                </div>
+            </aside>
+        }
+
+        <main class="main-content" style="@(currentUser == null ? "margin-left: 0;" : "")">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

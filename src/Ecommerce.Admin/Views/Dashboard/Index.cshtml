@@ -1,0 +1,31 @@
+@using Ecommerce.Admin.Models
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Dashboard";
+    var user = ViewData["CurrentUser"] as UserViewModel;
+}
+
+<div class="top-bar">
+    <h1 class="page-title">Dashboard Overview</h1>
+    <div class="date-now">@DateTime.Now.ToString("MMMM dd, yyyy")</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    <div class="admin-card" style="border-left: 4px solid var(--primary);">
+        <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Total Users</div>
+        <div style="font-size: 2rem; font-weight: 900; margin-top: 0.5rem;">--</div>
+    </div>
+    <div class="admin-card" style="border-left: 4px solid var(--accent);">
+        <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Total Products</div>
+        <div style="font-size: 2rem; font-weight: 900; margin-top: 0.5rem;">--</div>
+    </div>
+    <div class="admin-card" style="border-left: 4px solid #10b981;">
+        <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Active Warehouses</div>
+        <div style="font-size: 2rem; font-weight: 900; margin-top: 0.5rem;">--</div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <h3 style="font-weight: 800; margin-bottom: 1.5rem;">Welcome back, @user?.Username! 🌟</h3>
+    <p style="color: var(--text-muted);">Use the sidebar to navigate through the management sections. You are logged in as a <strong>@user?.Role</strong>.</p>
+</div>

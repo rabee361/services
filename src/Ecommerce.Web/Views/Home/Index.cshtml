@@ -1,0 +1,85 @@
+﻿@{
+    ViewData["Title"] = "Home";
+    var featured = ViewBag.FeaturedProducts as List<Ecommerce.Web.Models.ProductViewModel>;
+    var newArrivals = ViewBag.NewProducts as List<Ecommerce.Web.Models.ProductViewModel>;
+    var discounts = ViewBag.DiscountedProducts as List<Ecommerce.Web.Models.ProductViewModel>;
+}
+
+<section class="hero">
+    <div class="container">
+        <h1 class="hero-title">Elevate Your Lifestyle with <br>Premium Essentials</h1>
+        <p class="hero-text">Discover a curated collection of modern designs, from tech to home, crafted for those who value quality and aesthetics.</p>
+        <a href="/Home/Gallery" class="btn btn-primary">Browse Collection</a>
+    </div>
+</section>
+
+<div class="container">
+    @if (featured != null && featured.Any())
+    {
+        <section>
+            <h2 class="section-title">Featured Products</h2>
+            <div class="product-grid">
+                @foreach (var product in featured)
+                {
+                    <div class="product-card">
+                        <img src="@product.ImageUrl" alt="@product.Name" class="product-img">
+                        <div class="product-info">
+                            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.25rem;">@product.Category</p>
+                            <h3 class="product-name">@product.Name</h3>
+                            <p class="product-price">$@product.Price</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    @if (newArrivals != null && newArrivals.Any())
+    {
+        <section>
+            <h2 class="section-title">New Arrivals</h2>
+            <div class="product-grid">
+                @foreach (var product in newArrivals)
+                {
+                    <div class="product-card">
+                        <img src="@product.ImageUrl" alt="@product.Name" class="product-img">
+                        <div class="product-info">
+                            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.25rem;">@product.Category</p>
+                            <h3 class="product-name">@product.Name</h3>
+                            <p class="product-price">$@product.Price</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    @if (discounts != null && discounts.Any())
+    {
+        <section>
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <h2 class="section-title">Special Offers</h2>
+                <span style="color: var(--accent); font-weight: 800;">UP TO 50% OFF</span>
+            </div>
+            <div class="product-grid">
+                @foreach (var product in discounts)
+                {
+                    <div class="product-card">
+                        <div style="position: relative;">
+                            <img src="@product.ImageUrl" alt="@product.Name" class="product-img">
+                            <span class="badge badge-discount" style="position: absolute; top: 1rem; left: 1rem;">-@product.DiscountPercentage%</span>
+                        </div>
+                        <div class="product-info">
+                            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.25rem;">@product.Category</p>
+                            <h3 class="product-name">@product.Name</h3>
+                            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                                <p class="product-price" style="color: #ef4444;">$@product.DiscountedPrice</p>
+                                <p style="text-decoration: line-through; color: var(--text-muted); font-size: 0.9rem;">$@product.Price</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+</div>

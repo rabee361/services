@@ -1,0 +1,60 @@
+@model IEnumerable<Ecommerce.Admin.Models.ProductViewModel>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Products";
+}
+
+<div class="top-bar">
+    <h1 class="page-title">Product Catalog</h1>
+    <button class="btn btn-primary" onclick="document.getElementById('addModal').style.display='flex'"><i class="fa-solid fa-plus"></i> Add Product</button>
+</div>
+
+<div class="admin-card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Price</th>
+                <th>Category</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td><div style="font-weight: 700;">@p.Name</div></td>
+                    <td>$@p.Price</td>
+                    <td>@(p.Category?.Name ?? "Uncategorized")</td>
+                    <td>
+                        <form asp-action="Delete" method="post">
+                            <input type="hidden" name="id" value="@p.Id" />
+                            <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Simple Add Modal Mock -->
+<div id="addModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+    <div class="login-card" style="max-width: 500px;">
+        <h3 style="margin-bottom:1.5rem;">Add New Product</h3>
+        <form asp-action="Create" method="post">
+            <div class="form-group">
+                <label class="form-label">Product Name</label>
+                <input name="Name" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Price</label>
+                <input name="Price" type="number" step="0.01" class="form-input" required />
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:2rem;">
+                <button type="button" class="btn btn-outline" style="flex:1" onclick="document.getElementById('addModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="flex:1">Save Product</button>
+            </div>
+        </form>
+    </div>
+</div>

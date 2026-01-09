@@ -1,0 +1,163 @@
+@model List<Ecommerce.Web.Models.CategoryViewModel>
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<section class="hero" style="padding: 4rem 0;">
+    <div class="container">
+        <h1 class="hero-title" style="font-size: 3rem;">Shop by Category</h1>
+        <p class="hero-text">Explore our curated collections across various categories</p>
+    </div>
+</section>
+
+<div class="container" style="padding-bottom: 4rem;">
+    <div class="categories-grid">
+        @foreach (var category in Model)
+        {
+            <a href="/Home/Category/@category.Id" class="category-card">
+                <div class="category-icon">
+                    @switch (category.Name.ToLower())
+                    {
+                        case "electronics":
+                            <span>💻</span>
+                            break;
+                        case "home":
+                            <span>🏠</span>
+                            break;
+                        case "accessories":
+                            <span>👜</span>
+                            break;
+                        case "furniture":
+                            <span>🪑</span>
+                            break;
+                        case "apparel":
+                            <span>👕</span>
+                            break;
+                        default:
+                            <span>📦</span>
+                            break;
+                    }
+                </div>
+                <div class="category-content">
+                    <h2 class="category-name">@category.Name</h2>
+                    <p class="category-description">@category.Description</p>
+                    <div class="category-stats">
+                        <span class="category-count">@category.ProductCount Products</span>
+                        <span class="category-arrow">→</span>
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+</div>
+
+<style>
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    @@media (max-width: 768px) {
+        .categories-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .category-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+        transition: var(--transition);
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        transform: translateX(-100%);
+        transition: var(--transition);
+    }
+
+    .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        border-color: var(--primary);
+    }
+
+    .category-card:hover::before {
+        transform: translateX(0);
+    }
+
+    .category-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 1rem;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(245, 158, 11, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        transition: var(--transition);
+    }
+
+    .category-card:hover .category-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .category-content {
+        width: 100%;
+    }
+
+    .category-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0 0 0.5rem 0;
+        color: var(--text-main);
+    }
+
+    .category-description {
+        color: var(--text-muted);
+        margin: 0 0 1rem 0;
+        line-height: 1.6;
+    }
+
+    .category-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .category-count {
+        font-weight: 600;
+        color: var(--primary);
+        font-size: 0.9rem;
+    }
+
+    .category-arrow {
+        font-size: 1.5rem;
+        color: var(--primary);
+        transition: var(--transition);
+    }
+
+    .category-card:hover .category-arrow {
+        transform: translateX(5px);
+    }
+</style>

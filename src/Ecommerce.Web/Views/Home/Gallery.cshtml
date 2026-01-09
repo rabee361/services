@@ -1,0 +1,102 @@
+@model List<Ecommerce.Web.Models.ProductViewModel>
+@{
+    ViewData["Title"] = "Product Gallery";
+}
+
+<div class="container" style="padding-top: 3rem;">
+    <h1 class="section-title">Explore Our Gallery</h1>
+    <p style="color: var(--text-muted); margin-bottom: 3rem;">Find exactly what you're looking for our extensive collection.</p>
+
+    <div class="gallery-grid" id="product-gallery">
+        @foreach (var product in Model)
+        {
+            <div class="product-card">
+                <div style="position: relative;">
+                    <img src="@product.ImageUrl" alt="@product.Name" class="product-img">
+                    @if (product.DiscountPercentage.HasValue)
+                    {
+                        <span class="badge badge-discount" style="position: absolute; top: 1rem; left: 1rem;">-@product.DiscountPercentage%</span>
+                    }
+                </div>
+                <div class="product-info">
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.25rem;">@product.Category</p>
+                    <h3 class="product-name">@product.Name</h3>
+                    <p class="product-price">$@product.Price</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div id="loading" style="display: none; text-align: center; padding: 2rem; color: var(--text-muted);">
+        <p>Loading more products...</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let skip = @Model.Count;
+        const take = 10;
+        let isLoading = false;
+        let hasMore = true;
+
+        window.addEventListener('scroll', () => {
+            if (isLoading || !hasMore) return;
+
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+                loadMoreProducts();
+            }
+        });
+
+        async function loadMoreProducts() {
+            isLoading = true;
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                const response = await fetch(`/Home/GetMoreProducts?skip=${skip}&take=${take}`);
+                const products = await response.json();
+
+                if (products.length === 0) {
+                    hasMore = false;
+                    document.getElementById('loading').innerHTML = '<p>You\'ve reached the end!</p>';
+                    return;
+                }
+
+                const gallery = document.getElementById('product-gallery');
+                products.forEach(product => {
+                    const card = createProductCard(product);
+                    gallery.appendChild(card);
+                });
+
+                skip += products.length;
+            } catch (error) {
+                console.error('Error loading products:', error);
+            } finally {
+                isLoading = false;
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function createProductCard(product) {
+            const div = document.createElement('div');
+            div.className = 'product-card';
+            
+            let badgeHtml = '';
+            if (product.discountPercentage) {
+                badgeHtml = `<span class="badge badge-discount" style="position: absolute; top: 1rem; left: 1rem;">-${product.discountPercentage}%</span>`;
+            }
+
+            div.innerHTML = `
+                <div style="position: relative;">
+                    <img src="${product.imageUrl}" alt="${product.name}" class="product-img">
+                    ${badgeHtml}
+                </div>
+                <div class="product-info">
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.25rem;">${product.category}</p>
+                    <h3 class="product-name">${product.name}</h3>
+                    <p class="product-price">$${product.price}</p>
+                </div>
+            `;
+            return div;
+        }
+    </script>
+}

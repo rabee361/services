@@ -1,0 +1,46 @@
+@model IEnumerable<Ecommerce.Admin.Models.StockViewModel>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Inventory Management";
+}
+
+<div class="top-bar">
+    <h1 class="page-title">Inventory Management</h1>
+</div>
+
+<div class="admin-card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Warehouse</th>
+                <th>Quantity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stock in Model)
+            {
+                <tr>
+                    <td>
+                        <div style="font-weight: 700;">@stock.ProductName</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Product ID: #@stock.ProductId</div>
+                    </td>
+                    <td>@(stock.Warehouse?.Name ?? "ID: #" + stock.WarehouseId)</td>
+                    <td>
+                        <div style="font-size: 1.2rem; font-weight: 800; color: @(stock.Quantity < 10 ? "#ef4444" : "inherit")">
+                            @stock.Quantity
+                        </div>
+                    </td>
+                    <td>
+                        <form asp-action="UpdateStock" method="post" style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="hidden" name="id" value="@stock.Id" />
+                            <input type="number" name="quantity" value="@stock.Quantity" class="form-input" style="width: 80px; padding: 0.4rem;" />
+                            <button type="submit" class="btn btn-primary" style="padding: 0.4rem 0.8rem;">Update</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

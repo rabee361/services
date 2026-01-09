@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Create Account";
+}
+
+<section style="padding: 100px 0; min-height: 80vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent);">
+    <div style="width: 100%; max-width: 400px; background: var(--bg-card); padding: 3rem; border-radius: 2rem; border: 1px solid var(--border); box-shadow: var(--shadow);">
+        <h2 style="font-weight: 900; margin-bottom: 0.5rem; text-align: center; letter-spacing: -0.05em;">Join Us</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem;">Create your profile to start shopping</p>
+
+        @if (ViewBag.Error != null)
+        {
+            <div style="padding: 1rem; background: #fee2e2; color: #ef4444; border-radius: 0.8rem; margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 600;">
+                @ViewBag.Error
+            </div>
+        }
+
+        <form asp-action="Signup" method="post">
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">Username</label>
+                <input name="username" class="btn" style="width: 100%; background: var(--bg-main); border: 1px solid var(--border); text-align: left; padding: 1rem;" placeholder="johndoe" required />
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">Email</label>
+                <input name="email" type="email" class="btn" style="width: 100%; background: var(--bg-main); border: 1px solid var(--border); text-align: left; padding: 1rem;" placeholder="john@example.com" required />
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem;">Password</label>
+                <input name="password" type="password" class="btn" style="width: 100%; background: var(--bg-main); border: 1px solid var(--border); text-align: left; padding: 1rem;" placeholder="••••••••" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; border-radius: 1rem; font-size: 1rem;">Create Account</button>
+        </form>
+
+        <p style="margin-top: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+            Already have an account? <a asp-action="Login" style="color: var(--primary); font-weight: 700;">Sign in</a>
+        </p>
+    </div>
+</section>

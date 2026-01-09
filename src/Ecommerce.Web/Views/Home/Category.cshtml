@@ -1,0 +1,114 @@
+@model List<Ecommerce.Web.Models.ProductViewModel>
+@{
+    ViewData["Title"] = ViewBag.Category.Name;
+    var category = ViewBag.Category as Ecommerce.Web.Models.CategoryViewModel;
+}
+
+<section class="hero" style="padding: 4rem 0;">
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="/Home/Categories">Categories</a>
+            <span>→</span>
+            <span>@category.Name</span>
+        </div>
+        <h1 class="hero-title" style="font-size: 3rem;">@category.Name</h1>
+        <p class="hero-text">@category.Description</p>
+        <div class="category-meta">
+            <span class="category-badge">@Model.Count @(Model.Count == 1 ? "Product" : "Products")</span>
+        </div>
+    </div>
+</section>
+
+<div class="container" style="padding-bottom: 4rem;">
+    @if (Model.Any())
+    {
+        <div class="product-grid">
+            @foreach (var product in Model)
+            {
+                <div class="product-card">
+                    <img src="@product.ImageUrl" alt="@product.Name" class="product-img">
+                    <div class="product-info">
+                        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.25rem;">@product.Category</p>
+                        <h3 class="product-name">@product.Name</h3>
+                        @if (product.DiscountPercentage.HasValue)
+                        {
+                            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                                <p class="product-price" style="color: #ef4444;">$@product.DiscountedPrice.ToString("F2")</p>
+                                <p style="text-decoration: line-through; color: var(--text-muted); font-size: 0.9rem;">$@product.Price.ToString("F2")</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="product-price">$@product.Price.ToString("F2")</p>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-category">
+            <div class="empty-icon">📦</div>
+            <h2>No Products Yet</h2>
+            <p>This category doesn't have any products at the moment.</p>
+            <a href="/Home/Categories" class="btn btn-primary">Browse Other Categories</a>
+        </div>
+    }
+</div>
+
+<style>
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    .breadcrumb a {
+        color: var(--primary);
+        transition: var(--transition);
+    }
+
+    .breadcrumb a:hover {
+        color: var(--primary-hover);
+    }
+
+    .category-meta {
+        margin-top: 1rem;
+    }
+
+    .category-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        padding: 0.5rem 1.25rem;
+        border-radius: 99px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .empty-category {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-category h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-category p {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+    }
+</style>
